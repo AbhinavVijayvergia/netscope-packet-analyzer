@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetScope — Packet Analyzer</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    <span class="logo-name">NET<span>SCOPE</span></span>
+  </div>
+  <div class="header-status">
+    <div class="status-dot" id="header-dot"></div>
+    <span id="header-status-text">IDLE</span>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="main">
+
+  <!-- CONTROLS -->
+  <div class="controls-panel">
+
+    <!-- Live Capture -->
+    <div class="control-section">
+      <span class="section-label">Live Capture</span>
+      <div class="control-row">
+        <select id="iface-select" title="Network interface">
+          <option value="">Loading interfaces…</option>
+        </select>
+        <button class="btn btn-start" id="btn-start">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Start
+        </button>
+        <button class="btn btn-stop" id="btn-stop" disabled>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+          Stop
+        </button>
+      </div>
+    </div>
+
+    <!-- PCAP Upload -->
+    <div class="control-section">
+      <span class="section-label">PCAP Analysis</span>
+      <div class="control-row">
+        <div class="file-input-wrapper">
+          <button class="btn btn-upload" id="btn-upload">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload .pcap
+          </button>
+          <input type="file" id="pcap-file" accept=".pcap,.pcapng" style="display:none" />
+        </div>
+        <div class="status-msg" id="status-msg">Ready — start a capture or upload a PCAP file.</div>
+      </div>
+    </div>
+
+  </div><!-- /controls-panel -->
+
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-grid">
+
+    <div class="stat-card green">
+      <div class="stat-label">Total Packets</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-sub">captured / analyzed</div>
+    </div>
+
+    <div class="stat-card amber">
+      <div class="stat-label">Data Transferred</div>
+      <div class="stat-value" id="stat-bytes">0 B</div>
+      <div class="stat-sub">total payload bytes</div>
+    </div>
+
+    <div class="stat-card teal">
+      <div class="stat-label">Most Active IP</div>
+      <div class="stat-value" style="font-size:1.1rem" id="stat-active-ip">—</div>
+      <div class="stat-sub">highest combined traffic</div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-label">Top Protocol</div>
+      <div class="stat-value" id="stat-proto">—</div>
+      <div class="stat-sub">most frequent protocol</div>
+    </div>
+
+  </div><!-- /stats-grid -->
+
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+
+    <!-- Protocol Breakdown -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Protocol Breakdown</span>
+        <span class="chart-badge">Doughnut</span>
+      </div>
+      <div class="chart-container pie-wrap">
+        <canvas id="chart-proto"></canvas>
+      </div>
+    </div>
+
+    <!-- Traffic Timeline -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Traffic Over Time</span>
+        <span class="chart-badge">Packets / sec</span>
+      </div>
+      <div class="chart-container" style="height:260px">
+        <canvas id="chart-timeline"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Source IPs -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Top 10 Source IPs</span>
+        <span class="chart-badge">Bar</span>
+      </div>
+      <div class="chart-container" style="height:280px">
+        <canvas id="chart-src"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Destination IPs -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Top 10 Destination IPs</span>
+        <span class="chart-badge">Bar</span>
+      </div>
+      <div class="chart-container" style="height:280px">
+        <canvas id="chart-dst"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /charts-grid -->
+
+
+  <!-- PACKET TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <span class="table-title">Packet Stream</span>
+      <span class="table-count" id="table-count">0 packets</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Source IP</th>
+            <th>Destination IP</th>
+            <th>Protocol</th>
+            <th>Length (B)</th>
+          </tr>
+        </thead>
+        <tbody id="packet-tbody"></tbody>
+      </table>
+      <div class="empty-state show" id="empty-state">
+        No packets yet — start a live capture or upload a .pcap file.
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Main JS (module) -->
+<script type="module" src="/js/main.js"></script>
+
+</body>
+</html>
