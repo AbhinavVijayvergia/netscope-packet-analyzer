@@ -21,7 +21,7 @@ visibility, a core skill for SOC and blue team work.
 ## Project Structure
 
 ```
-packet-analyzer/
+netscope-packet-analyzer/
 ├── app.py                  # Flask entry point
 ├── requirements.txt
 ├── backend/
