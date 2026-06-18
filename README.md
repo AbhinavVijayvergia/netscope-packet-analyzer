@@ -2,7 +2,21 @@
 
 A full-stack, single-page packet analyzer built with Flask + Scapy on the backend and vanilla JS + Chart.js on the frontend. Supports live capture on any network interface and offline analysis of `.pcap` files.
 
+![Python](https://img.shields.io/badge/Python-3.9+-blue)
+![Flask](https://img.shields.io/badge/Flask-2.x-lightgrey)
+![Scapy](https://img.shields.io/badge/Scapy-packet--capture-green)
+
 ---
+
+## Why I Built This
+
+Most packet analyzers (Wireshark, tcpdump) are powerful but CLI-heavy or 
+require deep familiarity to extract quick insights. NetScope was built to 
+provide a real-time, browser-based view of network traffic — useful for 
+rapid triage, protocol distribution analysis, and pcap forensics without 
+leaving the browser. Built as a hands-on exercise in packet-level network 
+visibility, a core skill for SOC and blue team work.
+
 
 ## Project Structure
 
@@ -114,3 +128,10 @@ Then open **http://localhost:5000** in your browser.
 - The packet table auto-scrolls during live capture and keeps the last 200 rows rendered.
 - PCAP timeline uses the embedded packet timestamps, not wall-clock time.
 - All chart data refreshes every **1 second** during live capture via polling.
+
+## What I Learned
+
+- How Scapy dissects packet layers and exposes protocol fields at the byte level
+- Designing a polling-based real-time UI without WebSockets
+- Memory management considerations for continuous packet capture
+- REST API design for streaming data scenarios
